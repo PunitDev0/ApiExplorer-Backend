@@ -10,8 +10,11 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: `${
-        process.env.BACKEND_URL || "http://localhost:3001"
-      }/auth/google/callback`,
+        process.env.ENVIRONMENT === 'production'
+          ? process.env.BACKEND_URL
+          : 'http://localhost:3001'
+      }/api/auth/google/callback`,
+      
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -63,8 +66,10 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       callbackURL: `${
-        process.env.BACKEND_URL || "http://localhost:3001"
-      }/auth/github/callback`,
+        process.env.ENVIRONMENT === 'production'
+          ? process.env.GITHUB_CALLBACK
+          : 'http://localhost:3001'
+      }/api/auth/google/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
