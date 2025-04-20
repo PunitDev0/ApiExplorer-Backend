@@ -43,7 +43,7 @@ import workspaceRouter from './routes/workspace.routes.js';
 import request from './routes/request.routes.js';
 import collectionRoutes from "./routes/collection.route.js";
 import errorExplain from './routes/apiErrorExplain.route.js'
-app.use('/auth', authRouter);
+app.use('/api/auth', authRouter);
 app.use('/api', workspaceRouter);
 app.use('/api', request);
 app.use('/api', errorExplain);
