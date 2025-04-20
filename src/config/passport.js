@@ -1,0 +1,107 @@
+import passport from "passport";
+import GoogleStrategy from "passport-google-oauth20";
+import GitHubStrategy from "passport-github2";
+import User from "../Models/User.js";
+
+// Google Strategy
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${
+        process.env.BACKEND_URL || "http://localhost:3001"
+      }/auth/google/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails?.[0]?.value;
+        if (!email) {
+          return done(null, false, { message: "No email provided by Google." });
+        }
+
+        // Check if email is already associated with another provider
+        const existingUser = await User.findOne({ email });
+        if (existingUser && !existingUser.oauthProviders.some(p => p.provider === "google")) {
+          return done(null, false, {
+            message: "This email is already registered with GitHub. Please sign in using GitHub.",
+          });
+        }
+
+        // Check for existing Google OAuth user
+        let user = await User.findOne({
+          "oauthProviders.provider": "google",
+          "oauthProviders.providerId": profile.id,
+        });
+
+        if (!user) {
+          user = new User({
+            email,
+            name: profile.displayName || "Unknown",
+            oauthProviders: [
+              {
+                provider: "google",
+                providerId: profile.id,
+              },
+            ],
+          });
+          await user.save();
+        }
+
+        done(null, user);
+      } catch (error) {
+        done(error, null);
+      }
+    }
+  )
+);
+
+// GitHub Strategy
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: `${
+        process.env.BACKEND_URL || "http://localhost:3001"
+      }/auth/github/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails?.[0]?.value || `${profile.username}@github.com`;
+
+        // Check if email is already associated with another provider
+        const existingUser = await User.findOne({ email });
+        if (existingUser && !existingUser.oauthProviders.some(p => p.provider === "github")) {
+          return done(null, false, {
+            message: "This email is already registered with Google. Please sign in using Google.",
+          });
+        }
+
+        // Check for existing GitHub OAuth user
+        let user = await User.findOne({
+          "oauthProviders.provider": "github",
+          "oauthProviders.providerId": profile.id,
+        });
+
+        if (!user) {
+          user = new User({
+            email,
+            name: profile.displayName || profile.username || "Unknown",
+            oauthProviders: [
+              {
+                provider: "github",
+                providerId: profile.id,
+              },
+            ],
+          });
+          await user.save();
+        }
+
+        done(null, user);
+      } catch (error) {
+        done(error, null);
+      }
+    }
+  )
+);
