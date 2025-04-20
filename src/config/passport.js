@@ -69,7 +69,7 @@ passport.use(
         process.env.ENVIRONMENT === 'production'
           ? process.env.GITHUB_CALLBACK
           : 'http://localhost:3001'
-      }/api/auth/google/callback`,
+      }`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
