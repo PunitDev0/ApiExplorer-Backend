@@ -60,7 +60,7 @@ router.route("/google/callback").get(
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "None",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
@@ -105,7 +105,7 @@ router.route("/github/callback").get(
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "None",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
