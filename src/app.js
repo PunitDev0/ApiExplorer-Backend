@@ -8,7 +8,14 @@ import './config/passport.js'; // Passport config import karo
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:4000", "https://apiexplorer.vercel.app"];
+// ✅ Tell Express to trust proxies (important for secure cookies on Render)
+app.set('trust proxy', 1); 
+
+const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:4000",
+    "https://apiexplorer.vercel.app"
+];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -34,7 +41,10 @@ app.use(session({
     secret: process.env.JWT_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: {
+        secure: process.env.NODE_ENV === "production",   // ✅ Secure only in production
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax" // ✅ For cross-origin cookies
+    }
 }));
 
 // Passport initialize karo
@@ -51,18 +61,17 @@ import authRouter from './routes/auth.routes.js';
 import workspaceRouter from './routes/workspace.routes.js';
 import request from './routes/request.routes.js';
 import collectionRoutes from "./routes/collection.route.js";
-import errorExplain from './routes/apiErrorExplain.route.js'
+import errorExplain from './routes/apiErrorExplain.route.js';
+
 app.use('/api/auth', authRouter);
 app.use('/api', workspaceRouter);
 app.use('/api', request);
 app.use('/api', errorExplain);
-
 app.use("/api/collections", collectionRoutes);
+
 // Test route
 app.get('/', (req, res) => {
     res.send("Backend chal raha hai bhai!");
 });
-
-
 
 export { app };
