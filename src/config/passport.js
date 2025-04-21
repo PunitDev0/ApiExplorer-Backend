@@ -11,9 +11,9 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: `${
         process.env.ENVIRONMENT === 'production'
-          ? process.env.BACKEND_URL
-          : 'http://localhost:3001'
-      }/api/auth/google/callback`,
+          ? process.env.GOOGLE_CALLBACK
+          : 'http://localhost:3001/api/auth/google/callback'
+      }`,
       
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -68,7 +68,7 @@ passport.use(
       callbackURL: `${
         process.env.ENVIRONMENT === 'production'
           ? process.env.GITHUB_CALLBACK
-          : 'http://localhost:3001'
+          : 'http://localhost:3001/api/auth/github/callback'
       }`,
     },
     async (accessToken, refreshToken, profile, done) => {
