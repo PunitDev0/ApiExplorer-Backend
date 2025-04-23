@@ -9,16 +9,18 @@ const router = express.Router();
 // Manual auth routes
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
+
+// Protected route to get the current user
 router.route("/me").get(protect, getCurrentUser);
 
-// Logout route
+// Logout route to clear the cookie
 router.route("/logout").post((req, res) => {
   res.cookie("token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production", // Make sure secure flag is true in production
     sameSite: "None",
     path: "/",
-    expires: new Date(0),
+    expires: new Date(0), // Expire the cookie immediately
   });
 
   res.status(200).json({
@@ -35,39 +37,31 @@ router.route("/google").get(
 router.route("/google/callback").get(
   passport.authenticate("google", {
     session: false,
-    failureRedirect: `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/login?error=${encodeURIComponent(
-      "Authentication failed. Please try again."
-    )}`,
+    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
-        // If authentication failed, redirect with the error message from Passport
+        // If authentication failed, redirect with error message
         const errorMessage = req.authInfo?.message || "Authentication failed";
-        return res.redirect(
-          `${
-            process.env.FRONTEND_URL || "http://localhost:3000"
-          }/login?error=${encodeURIComponent(errorMessage)}`
-        );
+        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent(errorMessage)}`);
       }
 
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      // Create a JWT token
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
+      // Set the token in the cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "None",
+        secure: process.env.NODE_ENV === "production", // Secure flag for production
+        sameSite: "None", // Important for cross-site cookie handling
         path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // Token expiration (1 week)
       });
 
       res.redirect(process.env.FRONTEND_URL || "http://localhost:3000/");
     } catch (error) {
-      next(error);
+      next(error); // Pass the error to the global error handler
     }
   }
 );
@@ -80,39 +74,30 @@ router.route("/github").get(
 router.route("/github/callback").get(
   passport.authenticate("github", {
     session: false,
-    failureRedirect: `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/login?error=${encodeURIComponent(
-      "Authentication failed. Please try again."
-    )}`,
+    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
-        // If authentication failed, redirect with the error message from Passport
+        // If authentication failed, redirect with error message
         const errorMessage = req.authInfo?.message || "Authentication failed";
-        return res.redirect(
-          `${
-            process.env.FRONTEND_URL || "http://localhost:3000"
-          }/login?error=${encodeURIComponent(errorMessage)}`
-        );
+        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent(errorMessage)}`);
       }
 
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      // Create a JWT token
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
+      // Set the token in the cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: "None",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production", // Secure flag for production
+        sameSite: "None", // Important for cross-site cookie handling
+        maxAge: 7 * 24 * 60 * 60 * 1000, // Token expiration (1 week)
       });
-      
 
       res.redirect(process.env.FRONTEND_URL || "http://localhost:3000/");
     } catch (error) {
-      next(error);
+      next(error); // Pass the error to the global error handler
     }
   }
 );
