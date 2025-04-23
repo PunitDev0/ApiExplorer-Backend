@@ -142,15 +142,30 @@ const loginUser = asyncHandler(async (req, res) => {
 // Get Current User
 const getCurrentUser = asyncHandler(async (req, res) => {
   try {
-    const token = req.cookies.token;
-    console.log(token);
-    
+    let token;
+
+    // 1. Try to read from req.cookies
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+    }
+  
+    // 2. Fallback to raw cookie string parsing
+    if (!token && req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';').reduce((acc, curr) => {
+        const [key, value] = curr.trim().split('=');
+        acc[key] = value;
+        return acc;
+      }, {});
+      token = cookies.token;
+    }
+  
     if (!token) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: "Not logged in" 
+        message: 'Not authorized, token not found',
       });
     }
+  
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId).select('-password');

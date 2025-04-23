@@ -5,24 +5,31 @@ import User from '../Models/User.js';
 
 export const protect = asyncHandler(async (req, res, next) => {
   let token;
-  console.log(req.cookies.token);
-  
-  // Check for token in cookies or authorization header
-  if (req.cookies.token) {
+
+  // 1. Try to read from req.cookies
+  if (req.cookies?.token) {
     token = req.cookies.token;
-  } else if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // 2. Fallback to raw cookie string parsing
+  if (!token && req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';').reduce((acc, curr) => {
+      const [key, value] = curr.trim().split('=');
+      acc[key] = value;
+      return acc;
+    }, {});
+    token = cookies.token;
   }
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized, no token'
+      message: 'Not authorized, token not found',
     });
   }
+
+  console.log(token);
+  
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

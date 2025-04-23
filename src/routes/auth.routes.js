@@ -9,7 +9,7 @@ const router = express.Router();
 // Manual auth routes
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
-router.route("/me").get( getCurrentUser);
+router.route("/me").get(protect, getCurrentUser);
 
 // Logout route
 router.route("/logout").post((req, res) => {
@@ -104,7 +104,7 @@ router.route("/github/callback").get(
 
       res.cookie("token", token, {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: "None",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
