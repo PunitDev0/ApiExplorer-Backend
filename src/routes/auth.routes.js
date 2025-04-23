@@ -11,22 +11,19 @@ router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 
 // Protected route to get the current user
-router.route("/me").get(protect, getCurrentUser);
+router.route("/me").get( getCurrentUser);
 
 // Logout route to clear the cookie
 router.route("/logout").post((req, res) => {
+  console.log("Clearing token cookie");
   res.cookie("token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Make sure secure flag is true in production
-    sameSite: "None",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
     path: "/",
-    expires: new Date(0), // Expire the cookie immediately
+    expires: new Date(0),
   });
-
-  res.status(200).json({
-    success: true,
-    message: "Logged out successfully",
-  });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 });
 
 // Google OAuth routes
@@ -37,31 +34,37 @@ router.route("/google").get(
 router.route("/google/callback").get(
   passport.authenticate("google", {
     session: false,
-    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
+    failureRedirect: `${
+      process.env.FRONTEND_URL || "http://localhost:3000"
+    }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
-        // If authentication failed, redirect with error message
         const errorMessage = req.authInfo?.message || "Authentication failed";
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent(errorMessage)}`);
+        return res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login?error=${encodeURIComponent(errorMessage)}`
+        );
       }
 
-      // Create a JWT token
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-      // Set the token in the cookie
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Secure flag for production
-        sameSite: "None", // Important for cross-site cookie handling
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // Token expiration (1 week)
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
       });
 
-      res.redirect(process.env.FRONTEND_URL || "http://localhost:3000/");
-    } catch (error) {
-      next(error); // Pass the error to the global error handler
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      console.log("Google OAuth token set:", token);
+      res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
+    } catch (err) {
+      next(err);
     }
   }
 );
@@ -74,30 +77,37 @@ router.route("/github").get(
 router.route("/github/callback").get(
   passport.authenticate("github", {
     session: false,
-    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
+    failureRedirect: `${
+      process.env.FRONTEND_URL || "http://localhost:3000"
+    }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
-        // If authentication failed, redirect with error message
         const errorMessage = req.authInfo?.message || "Authentication failed";
-        return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent(errorMessage)}`);
+        return res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login?error=${encodeURIComponent(errorMessage)}`
+        );
       }
 
-      // Create a JWT token
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-      // Set the token in the cookie
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Secure flag for production
-        sameSite: "None", // Important for cross-site cookie handling
-        maxAge: 7 * 24 * 60 * 60 * 1000, // Token expiration (1 week)
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
       });
 
-      res.redirect(process.env.FRONTEND_URL || "http://localhost:3000/");
-    } catch (error) {
-      next(error); // Pass the error to the global error handler
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      console.log("GitHub OAuth token set:", token);
+      res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
+    } catch (err) {
+      next(err);
     }
   }
 );
