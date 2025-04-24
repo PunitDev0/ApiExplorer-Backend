@@ -40,6 +40,8 @@ export const protect = asyncHandler(async (req, res, next) => {
         message: 'Not authorized, user not found'
       });
     }
+    console.log(req.user);
+    
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

@@ -5,21 +5,21 @@ import { registerUser, loginUser, getCurrentUser } from "../controllers/auth.con
 import { protect } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
+const isProduction = process.env.NODE_ENV === "production";
 
 // Manual auth routes
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 
 // Protected route to get the current user
-router.route("/me").get( getCurrentUser);
+router.route("/me").get(protect, getCurrentUser);
 
 // Logout route to clear the cookie
 router.route("/logout").post((req, res) => {
-  console.log("Clearing token cookie");
   res.cookie("token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax",
     path: "/",
     expires: new Date(0),
   });
@@ -34,18 +34,13 @@ router.route("/google").get(
 router.route("/google/callback").get(
   passport.authenticate("google", {
     session: false,
-    failureRedirect: `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
+    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
-        const errorMessage = req.authInfo?.message || "Authentication failed";
         return res.redirect(
-          `${
-            process.env.FRONTEND_URL || "http://localhost:3000"
-          }/login?error=${encodeURIComponent(errorMessage)}`
+          `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed")}`
         );
       }
 
@@ -55,14 +50,16 @@ router.route("/google/callback").get(
 
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        secure: isProduction,
+        sameSite: isProduction ? "None" : "Lax",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      console.log("Google OAuth token set:", token);
-      res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
+      if (!isProduction) {
+        console.log("Google OAuth token set:", token);
+      }
+      res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`);
     } catch (err) {
       next(err);
     }
@@ -77,18 +74,13 @@ router.route("/github").get(
 router.route("/github/callback").get(
   passport.authenticate("github", {
     session: false,
-    failureRedirect: `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
+    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
-        const errorMessage = req.authInfo?.message || "Authentication failed";
         return res.redirect(
-          `${
-            process.env.FRONTEND_URL || "http://localhost:3000"
-          }/login?error=${encodeURIComponent(errorMessage)}`
+          `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed")}`
         );
       }
 
@@ -98,14 +90,16 @@ router.route("/github/callback").get(
 
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        secure: isProduction,
+        sameSite: isProduction ? "None" : "Lax",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      console.log("GitHub OAuth token set:", token);
-      res.redirect(process.env.FRONTEND_URL || "http://localhost:3000");
+      if (!isProduction) {
+        console.log("GitHub OAuth token set:", token);
+      }
+      res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`);
     } catch (err) {
       next(err);
     }
