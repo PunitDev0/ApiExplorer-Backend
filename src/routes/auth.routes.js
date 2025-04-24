@@ -99,7 +99,7 @@ router.route("/github/callback").get(
       if (!isProduction) {
         console.log("GitHub OAuth token set:", token);
       }
-      res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`);
+      res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/workspaces`);
     } catch (err) {
       next(err);
     }
