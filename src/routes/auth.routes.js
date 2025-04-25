@@ -48,7 +48,7 @@ router.route("/google/callback").get(
   }),
   (req, res, next) => {
     try {
-      if (!req.user) {
+      if (!req?.user) {
         return res.redirect(
           `${
             process.env.FRONTEND_URL || "http://localhost:3000"
@@ -95,7 +95,7 @@ router.route("/github/callback").get(
   }),
   (req, res, next) => {
     try {
-      if (!req.user) {
+      if (!req?.user) {
         return res.redirect(
           `${
             process.env.FRONTEND_URL || "http://localhost:3000"
