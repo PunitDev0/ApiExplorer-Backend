@@ -3,6 +3,14 @@ import GoogleStrategy from "passport-google-oauth20";
 import GitHubStrategy from "passport-github2";
 import User from "../Models/User.js";
 
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
+
 // Google Strategy
 passport.use(
   new GoogleStrategy(
