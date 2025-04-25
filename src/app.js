@@ -2,76 +2,83 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
 import session from "express-session";
+import MongoStore from "connect-mongo"; // For persistent session store
 import passport from "passport";
 import connectDB from "./DB/DB_Connection.js";
-import './config/passport.js'; // Passport config import karo
+import "./config/passport.js"; // Passport config import
 
 const app = express();
 
-// ✅ Tell Express to trust proxies (important for secure cookies on Render)
-app.set('trust proxy', 1); 
+// Trust proxies for production (Render, Vercel, etc.)
+app.set("trust proxy", 1);
 
-const allowedOrigins = [
-    "http://localhost:3000",
-    "http://localhost:4000",
-    "https://apiexplorer.vercel.app"
-];
+// Define allowed origin from environment variable
+const allowedOrigin = process.env.ORIGIN || "http://localhost:3000";
 
-app.use(cors({
+// CORS configuration
+app.use(
+  cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
+      if (!origin || origin === allowedOrigin) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
     },
-    credentials: true
-}));
+    credentials: true, // Allow cookies and credentials
+  })
+);
 
 // Middleware setup
-app.use(express.json({ limit: '16kb' }));
-app.use(express.urlencoded({ extended: true, limit: '16kb' }));
-app.use(express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 app.use(cookieParser());
 
-// Session setup for Passport
-app.use(session({
-    secret: process.env.JWT_SECRET,
+// Session setup with MongoDB store
+app.use(
+  session({
+    secret: process.env.JWT_SECRET || "fallback-secret",
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI, // Your MongoDB connection string
+      collectionName: "sessions",
+    }),
     cookie: {
-        secure: process.env.NODE_ENV === "production",   // ✅ Secure only in production
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax" // ✅ For cross-origin cookies
-    }
-}));
+      secure: process.env.NODE_ENV === "production", // Secure in production
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Cross-origin in production
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true,
+    },
+  })
+);
 
-// Passport initialize karo
+// Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB connect karo
+// Connect to MongoDB
 connectDB()
-    .then(() => console.log("DB connected ho gaya!"))
-    .catch((err) => console.log("DB connection mein dikkat:", err));
+  .then(() => console.log("DB connected ho gaya!"))
+  .catch((err) => console.log("DB connection mein dikkat:", err));
 
 // Routes
-import authRouter from './routes/auth.routes.js';
-import workspaceRouter from './routes/workspace.routes.js';
-import request from './routes/request.routes.js';
+import authRouter from "./routes/auth.routes.js";
+import workspaceRouter from "./routes/workspace.routes.js";
+import request from "./routes/request.routes.js";
 import collectionRoutes from "./routes/collection.route.js";
-import errorExplain from './routes/apiErrorExplain.route.js';
+import errorExplain from "./routes/apiErrorExplain.route.js";
 
-app.use('/api/auth', authRouter);
-app.use('/api', workspaceRouter);
-app.use('/api', request);
-app.use('/api', errorExplain);
+app.use("/api/auth", authRouter);
+app.use("/api", workspaceRouter);
+app.use("/api", request);
+app.use("/api", errorExplain);
 app.use("/api/collections", collectionRoutes);
 
 // Test route
-app.get('/', (req, res) => {
-    res.send("Backend chal raha hai bhai!");
+app.get("/", (req, res) => {
+  res.send("Backend chal raha hai bhai!");
 });
 
 export { app };

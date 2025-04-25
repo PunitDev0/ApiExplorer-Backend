@@ -12,10 +12,11 @@ router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 
 // Protected route to get the current user
-router.route("/me").get(getCurrentUser);
+router.route("/me").get(protect, getCurrentUser);
 
-// Logout route to clear the cookie
+// Logout route to clear the cookie and session
 router.route("/logout").post((req, res) => {
+  // Clear the JWT cookie
   res.cookie("token", "", {
     httpOnly: true,
     secure: isProduction,
@@ -23,31 +24,44 @@ router.route("/logout").post((req, res) => {
     path: "/",
     expires: new Date(0),
   });
-  res.status(200).json({ success: true, message: "Logged out successfully" });
+
+  // Destroy the session
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Failed to log out" });
+    }
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  });
 });
 
 // Google OAuth routes
 router.route("/google").get(
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+  passport.authenticate("google", { scope: ["profile", "email"], session: true })
 );
 
 router.route("/google/callback").get(
   passport.authenticate("google", {
-    session: false,
-    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
+    session: true,
+    failureRedirect: `${
+      process.env.FRONTEND_URL || "http://localhost:3000"
+    }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
         return res.redirect(
-          `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed")}`
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login?error=${encodeURIComponent("Authentication failed")}`
         );
       }
 
+      // Generate JWT
       const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
 
+      // Set JWT cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: isProduction,
@@ -59,6 +73,7 @@ router.route("/google/callback").get(
       if (!isProduction) {
         console.log("Google OAuth token set:", token);
       }
+
       res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`);
     } catch (err) {
       next(err);
@@ -68,26 +83,32 @@ router.route("/google/callback").get(
 
 // GitHub OAuth routes
 router.route("/github").get(
-  passport.authenticate("github", { scope: ["user:email"], session: false })
+  passport.authenticate("github", { scope: ["user:email"], session: true })
 );
 
 router.route("/github/callback").get(
   passport.authenticate("github", {
-    session: false,
-    failureRedirect: `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
+    session: true,
+    failureRedirect: `${
+      process.env.FRONTEND_URL || "http://localhost:3000"
+    }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
       if (!req.user) {
         return res.redirect(
-          `${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=${encodeURIComponent("Authentication failed")}`
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login?error=${encodeURIComponent("Authentication failed")}`
         );
       }
 
+      // Generate JWT
       const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
 
+      // Set JWT cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: isProduction,
@@ -99,6 +120,7 @@ router.route("/github/callback").get(
       if (!isProduction) {
         console.log("GitHub OAuth token set:", token);
       }
+
       res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/workspaces`);
     } catch (err) {
       next(err);

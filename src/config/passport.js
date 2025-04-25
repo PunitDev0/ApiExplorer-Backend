@@ -3,12 +3,19 @@ import GoogleStrategy from "passport-google-oauth20";
 import GitHubStrategy from "passport-github2";
 import User from "../Models/User.js";
 
-
+// Serialize only the user ID to reduce session size
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, user._id);
 });
-passport.deserializeUser((obj, done) => {
-  done(null, obj);
+
+// Deserialize by fetching user from DB
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 // Google Strategy
@@ -17,12 +24,10 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${
-        process.env.ENVIRONMENT === 'production'
+      callbackURL:
+        process.env.NODE_ENV === "production"
           ? process.env.GOOGLE_CALLBACK
-          : 'http://localhost:3001/api/auth/google/callback'
-      }`,
-      
+          : "http://localhost:3001/api/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -33,9 +38,13 @@ passport.use(
 
         // Check if email is already associated with another provider
         const existingUser = await User.findOne({ email });
-        if (existingUser && !existingUser.oauthProviders.some(p => p.provider === "google")) {
+        if (
+          existingUser &&
+          !existingUser.oauthProviders.some((p) => p.provider === "google")
+        ) {
           return done(null, false, {
-            message: "This email is already registered with GitHub. Please sign in using GitHub.",
+            message:
+              "This email is already registered with GitHub. Please sign in using GitHub.",
           });
         }
 
@@ -73,21 +82,25 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: `${
-        process.env.ENVIRONMENT === 'production'
+      callbackURL:
+        process.env.NODE_ENV === "production"
           ? process.env.GITHUB_CALLBACK
-          : 'http://localhost:3001/api/auth/github/callback'
-      }`,
+          : "http://localhost:3001/api/auth/github/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email = profile.emails?.[0]?.value || `${profile.username}@github.com`;
+        const email =
+          profile.emails?.[0]?.value || `${profile.username}@github.com`;
 
         // Check if email is already associated with another provider
         const existingUser = await User.findOne({ email });
-        if (existingUser && !existingUser.oauthProviders.some(p => p.provider === "github")) {
+        if (
+          existingUser &&
+          !existingUser.oauthProviders.some((p) => p.provider === "github")
+        ) {
           return done(null, false, {
-            message: "This email is already registered with Google. Please sign in using Google.",
+            message:
+              "This email is already registered with Google. Please sign in using Google.",
           });
         }
 
