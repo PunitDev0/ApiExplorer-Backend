@@ -12,7 +12,7 @@ router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 
 // Protected route to get the current user
-router.route("/me").get(protect, getCurrentUser);
+router.route("/me").get( getCurrentUser);
 
 // Logout route to clear the cookie and session
 router.route("/logout").post((req, res) => {
