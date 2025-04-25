@@ -12,22 +12,14 @@ const app = express();
 // Trust proxies for production (Render, Vercel, etc.)
 app.set("trust proxy", 1);
 
-// Define allowed origin from environment variable
-const allowedOrigin = process.env.ORIGIN || "http://localhost:3000";
-
-// CORS configuration
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || origin === allowedOrigin) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
-    credentials: true, // Allow cookies and credentials
-  })
-);
+// Setup CORS options
+const corsOptions = {
+    origin: 'https://apiexplorer.vercel.app', // Replace with your frontend URL
+    credentials: true, // Allow cookies and session data
+  };
+  
+  // Apply CORS middleware
+  app.use(cors(corsOptions));
 
 // Middleware setup
 app.use(express.json());
