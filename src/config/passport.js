@@ -2,7 +2,8 @@ import passport from "passport";
 import GoogleStrategy from "passport-google-oauth20";
 import GitHubStrategy from "passport-github2";
 import User from "../Models/User.js";
-
+import dotenv from 'dotenv';
+dotenv.config();
 // Serialize only the user ID to reduce session size
 passport.serializeUser((user, done) => {
   done(null, user._id);
@@ -17,6 +18,8 @@ passport.deserializeUser(async (id, done) => {
     done(error, null);
   }
 });
+
+console.log(process.env.GOOGLE_CLIENT_ID,);
 
 // Google Strategy
 passport.use(
@@ -85,7 +88,7 @@ passport.use(
       callbackURL:
         process.env.NODE_ENV === "production"
           ? process.env.GITHUB_CALLBACK
-          : "http://localhost:3001/api/auth/github/callback",
+          : "http://localhost:5000/api/auth/github/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
