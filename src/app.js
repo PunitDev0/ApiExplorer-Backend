@@ -14,7 +14,7 @@ app.set("trust proxy", 1);
 
 // Setup CORS options
 const corsOptions = {
-    origin: 'http://localhost:3000', // Replace with your frontend URL
+    origin: 'https://apiexplorer-backend.onrender.com', // Replace with your frontend URL
     credentials: true, // Allow cookies and session data
   };
   
