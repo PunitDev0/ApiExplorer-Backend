@@ -9,7 +9,7 @@ import "./config/passport.js"; // Passport config import
 
 const app = express();
 
-export const BASE_URL = process.env.NEXT_PUBLIC_NODE_ENVI === 'production' 
+export const BASE_URL = process.env.NODE_ENV === 'production' 
   ? process.env.CORS_URL 
   : 'http://localhost:3000';
 
@@ -49,6 +49,10 @@ app.use(
     },
   })
 );
+
+
+console.log('produtions',process.env.NODE_ENV);
+
 
 // Initialize Passport
 app.use(passport.initialize());
