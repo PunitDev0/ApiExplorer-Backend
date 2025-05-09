@@ -109,7 +109,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    user,
+    user, 
   });
 });
 

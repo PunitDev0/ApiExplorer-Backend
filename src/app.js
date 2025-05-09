@@ -30,6 +30,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
+app.use(session());
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Session setup with MongoDB store
 app.use(
@@ -50,13 +53,10 @@ app.use(
   })
 );
 
-
 console.log('produtions',process.env.NODE_ENV);
 
 
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 // Connect to MongoDB
 connectDB()
