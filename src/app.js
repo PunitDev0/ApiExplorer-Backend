@@ -9,12 +9,16 @@ import "./config/passport.js"; // Passport config import
 
 const app = express();
 
+export const BASE_URL = process.env.NEXT_PUBLIC_NODE_ENVI === 'production' 
+  ? process.env.CORS_URL 
+  : 'http://localhost:3000';
+
 // Trust proxies for production (Render, Vercel, etc.)
 app.set("trust proxy", 1);
 
 // Setup CORS options
 const corsOptions = {
-    origin: 'https://apiexplorer.vercel.app', // Replace with your frontend URL
+    origin: BASE_URL, // Replace with your frontend URL
     credentials: true, // Allow cookies and session data
   };
   
