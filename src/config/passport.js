@@ -5,19 +5,19 @@ import User from "../Models/User.js";
 import dotenv from 'dotenv';
 dotenv.config();
 // Serialize only the user ID to reduce session size
-passport.serializeUser((user, done) => {
-  done(null, user._id);
-});
+// passport.serializeUser((user, done) => {
+//   done(null, user._id);
+// });
 
-// Deserialize by fetching user from DB
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-});
+// // Deserialize by fetching user from DB
+// passport.deserializeUser(async (id, done) => {
+//   try {
+//     const user = await User.findById(id);
+//     done(null, user);
+//   } catch (error) {
+//     done(error, null);
+//   }
+// });
 
 console.log(process.env.GOOGLE_CLIENT_ID,);
 

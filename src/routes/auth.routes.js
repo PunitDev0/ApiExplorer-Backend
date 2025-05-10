@@ -12,9 +12,9 @@ router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 
 // Protected route to get the current user
-router.route("/me").get(getCurrentUser);
+router.route("/me").get(protect, getCurrentUser);
 
-// Logout route to clear the cookie and session
+// Logout route to clear the cookie
 router.route("/logout").post((req, res) => {
   // Clear the JWT cookie
   res.cookie("token", "", {
@@ -25,30 +25,24 @@ router.route("/logout").post((req, res) => {
     expires: new Date(0),
   });
 
-  // Destroy the session
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Failed to log out" });
-    }
-    res.status(200).json({ success: true, message: "Logged out successfully" });
-  });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 });
 
 // Google OAuth routes
 router.route("/google").get(
-  passport.authenticate("google", { scope: ["profile", "email"], session: true })
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })
 );
 
 router.route("/google/callback").get(
   passport.authenticate("google", {
-    session: true,
+    session: false,
     failureRedirect: `${
       process.env.FRONTEND_URL || "http://localhost:3000"
     }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
-      if (!req?.user) {
+      if (!req.user) {
         return res.redirect(
           `${
             process.env.FRONTEND_URL || "http://localhost:3000"
@@ -69,10 +63,6 @@ router.route("/google/callback").get(
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-
-      if (!isProduction) {
-        console.log("Google OAuth token set:", token);
-      }
 
       res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`);
     } catch (err) {
@@ -83,25 +73,25 @@ router.route("/google/callback").get(
 
 // GitHub OAuth routes
 router.route("/github").get(
-  passport.authenticate("github", { scope: ["user:email"], session: true })
+  passport.authenticate("github", { scope: ["user:email"], session: false })
 );
 
 router.route("/github/callback").get(
   passport.authenticate("github", {
-    session: true,
+    session: false,
     failureRedirect: `${
       process.env.FRONTEND_URL || "http://localhost:3000"
     }/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
   }),
   (req, res, next) => {
     try {
-      if (!req?.user) {
-        return res.redirect(
-          `${
-            process.env.FRONTEND_URL || "http://localhost:3000"
-          }/login?error=${encodeURIComponent("Authentication failed")}`
-        );
-      }
+      // if (!req.user) {
+      //   return res.redirect(
+      //     `${
+      //       process.env.FRONTEND_URL || "http://localhost:3000"
+      //     }/login?error=${encodeURIComponent("Authentication failed")}`
+      //   );
+      // }
 
       // Generate JWT
       const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
@@ -116,10 +106,6 @@ router.route("/github/callback").get(
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-
-      if (!isProduction) {
-        console.log("GitHub OAuth token set:", token);
-      }
 
       res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/workspaces`);
     } catch (err) {
