@@ -94,23 +94,45 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-// Get Current User
 const getCurrentUser = asyncHandler(async (req, res) => {
-  console.log('user data ',req?.user);
-  
-  const user = await User.findById(req?.user?._id).select('-password');
-  
-  if (!user) {
-    return res.status(404).json({ 
+  // Get token from cookies
+  const token = req?.cookies?.token;
+
+  // Check if token exists
+  if (!token) {
+    return res.status(401).json({
       success: false,
-      message: 'User not found',
+      message: "Not authorized, no token found",
     });
   }
 
-  res.status(200).json({
-    success: true,
-    user, 
-  });
+  try {
+    // Verify and decode JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Fetch user from database
+    const user = await User.findById(decoded.userId).select("-password");
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Return user data
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    // Handle JWT verification errors (e.g., invalid or expired token)
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized, invalid or expired token",
+    });
+  }
 });
 
 export { registerUser, loginUser, getCurrentUser };

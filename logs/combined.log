@@ -157,3 +157,8 @@
 {"level":"info","message":"::1 - - [10/May/2025:18:34:37 +0000] \"OPTIONS /api/auth/me HTTP/1.1\" 200 0 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\"","timestamp":"2025-05-10T18:34:37.512Z"}
 {"level":"info","message":"::1 - - [10/May/2025:18:34:37 +0000] \"GET /api/auth/me HTTP/1.1\" 401 61 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\"","timestamp":"2025-05-10T18:34:37.520Z"}
 {"level":"info","message":"MongoDB connected successfully","timestamp":"2025-05-10T18:40:17.598Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-05-10T18:50:18.290Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-05-10T18:53:32.852Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-05-10T18:57:23.035Z"}
+{"level":"info","message":"::1 - - [10/May/2025:18:57:50 +0000] \"OPTIONS /api/auth/me HTTP/1.1\" 200 0 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\"","timestamp":"2025-05-10T18:57:50.631Z"}
+{"level":"info","message":"::1 - - [10/May/2025:18:57:50 +0000] \"GET /api/auth/me HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\"","timestamp":"2025-05-10T18:57:50.898Z"}
