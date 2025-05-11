@@ -1,6 +1,10 @@
 import { Schema } from 'mongoose';
 
 const HeaderSchema = new Schema({
+  id: { 
+    type: String, 
+    required: true, 
+  },
   name: { 
     type: String, 
     required: [true, 'Header name is required'], 

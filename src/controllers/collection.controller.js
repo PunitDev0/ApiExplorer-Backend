@@ -157,6 +157,8 @@ export const deleteCollection = asyncHandler(async (req, res) => {
 });
 
 export const addRequestToCollection = asyncHandler(async (req, res) => {
+  console.log(req.body.request);
+  
   const { collectionId, request } = req.body;
   const userId = req.user._id;
 
