@@ -2,7 +2,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Request from "../Models/Request.js";
 import axios from "axios";
 
-// Existing request controller
 const request = asyncHandler(async (req, res, next) => {
   try {
     const {
@@ -72,20 +71,50 @@ const request = asyncHandler(async (req, res, next) => {
       }
     }
 
-    // Axios configuration
-    const config = {
-      method: method.toUpperCase(),
-      url,
-      headers: requestHeaders,
-      params: requestParams,
-      data: requestData,
-      timeout: 30000,
-      validateStatus: () => true,
-    };
+    // Check if URL is localhost
+    const isLocalhost = url.startsWith('http://localhost');
 
-    // Measure response time
+    let response;
     const startTime = Date.now();
-    const response = await axios(config);
+
+    if (isLocalhost) {
+      // Forward localhost request to CLI proxy
+      try {
+        response = await axios.post('http://localhost:9999/proxy', {
+          method,
+          url,
+          headers,
+          params,
+          body,
+          bodyType,
+          authType,
+          authData,
+        });
+        response = {
+          status: response.data.statusCode,
+          statusText: response.data.statusText,
+          headers: response.data.headers,
+          data: response.data.body,
+        };
+      } catch (proxyError) {
+        console.error("Proxy request failed:", proxyError);
+        throw new Error(`Failed to connect to CLI proxy: ${proxyError.message}. Ensure 'npx my-api-explorer' is running.`);
+      }
+    } else {
+      // Direct API call for non-localhost URLs
+      const config = {
+        method: method.toUpperCase(),
+        url,
+        headers: requestHeaders,
+        params: requestParams,
+        data: requestData,
+        timeout: 30000,
+        validateStatus: () => true,
+      };
+
+      response = await axios(config);
+    }
+
     const responseTime = Date.now() - startTime;
 
     // Calculate response size
@@ -124,7 +153,7 @@ const request = asyncHandler(async (req, res, next) => {
   }
 });
 
-// New getRequests controller
+// Existing getRequests controller (unchanged)
 const getRequests = asyncHandler(async (req, res) => {
   const { workspaceId } = req.query;
   const userId = req.user._id;
