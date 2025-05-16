@@ -36,13 +36,13 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
-// Validate critical environment variables
-const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "CORS_URL"];
-const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
-if (missingEnvVars.length > 0) {
-  logger.error(`Missing environment variables: ${missingEnvVars.join(", ")}`);
-  process.exit(1);
-}
+// // Validate critical environment variables
+// const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "CORS_URL"];
+// const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+// if (missingEnvVars.length > 0) {
+//   logger.error(`Missing environment variables: ${missingEnvVars.join(", ")}`);
+//   process.exit(1);
+// }
 
 // Define CORS origin
 const BASE_URL = process.env.CORS_URL; // e.g., https://your-frontend.com
