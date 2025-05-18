@@ -51,6 +51,10 @@ const UserSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Request' // API requests ke liye
     }],
+    environments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Environment' // Environment variables ke liye, bhai!
+    }],
     createdAt: {
         type: Date,
         default: Date.now
@@ -64,6 +68,7 @@ const UserSchema = new Schema({
 // Indexes for faster queries
 UserSchema.index({ email: 1 });
 UserSchema.index({ "oauthProviders.provider": 1, "oauthProviders.providerId": 1 });
+UserSchema.index({ environments: 1 }); // Index for environments
 
 // Password hash karne ke liye pre-save hook
 UserSchema.pre('save', async function(next) {

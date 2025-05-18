@@ -107,13 +107,13 @@ import workspaceRouter from "./routes/workspace.routes.js";
 import request from "./routes/request.routes.js";
 import collectionRoutes from "./routes/collection.route.js";
 import errorExplain from "./routes/apiErrorExplain.route.js";
-
+import environmentRoutes from "./routes/environment.route.js";
 app.use("/api/auth", authRouter);
 app.use("/api", workspaceRouter);
 app.use("/api", request);
 app.use("/api", errorExplain);
 app.use("/api/collections", collectionRoutes);
-
+app.use("/api/environments", environmentRoutes);
 // Test route
 app.get("/", (req, res) => {
   res.json({ message: "Backend is running!" });
